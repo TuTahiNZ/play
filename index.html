@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: white; /* Static background color */
+            position: relative;
+            overflow: hidden;
+        }
+        .clock-face {
+            position: absolute;
+            width: 300vh;
+            height: 300vh;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0; 
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .counter {
+            font-size: 3.5rem; /* Adjusted for the initial text */
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .play-btn {
+            padding: 0.5rem 2rem;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        .play-btn:hover {
+            background-color: #2563eb;
+        }
+        .play-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-face" id="clockFaceBottom"></div>
+    <div class="clock-face" id="clockFaceTop"></div>
+
+    <div class="content-wrapper">
+        <div class="counter">Place Race</div>
+        <button class="play-btn" id="playBtn">Play</button>
+    </div>
+
+    <script>
+        const counter = document.querySelector('.counter');
+        const playBtn = document.getElementById('playBtn');
+        const clockFaceTop = document.getElementById('clockFaceTop');
+        const clockFaceBottom = document.getElementById('clockFaceBottom');
+        
+        let count = 1840;
+        let intervalId = null;
+        let colorCurrent;
+        let colorNext;
+
+        let isFirstPlay = true;
+        let elapsedBeforePause = 0;
+
+        function getRandomPastel() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 100%, 85%)`;
+        }
+        
+        function initializeColors() {
+            colorCurrent = getRandomPastel();
+            colorNext = getRandomPastel();
+            clockFaceTop.style.backgroundColor = colorCurrent;
+            clockFaceBottom.style.backgroundColor = colorNext;
+        }
+        
+        function startCountdown() {
+            playBtn.disabled = true;
+            let countdownValue = 3;
+            counter.style.fontSize = '5rem';
+            counter.textContent = countdownValue;
+
+            const countdownInterval = setInterval(() => {
+                countdownValue--;
+                if (countdownValue > 0) {
+                    counter.textContent = countdownValue;
+                } else {
+                    clearInterval(countdownInterval);
+                    playBtn.disabled = false;
+                    counter.textContent = count;
+                    startMainTimer();
+                }
+            }, 1000);
+        }
+
+        function startMainTimer() {
+            playBtn.textContent = 'Pause';
+            
+            // This is the key change:
+            // If the timer is starting from zero (i.e., not resuming from a pause),
+            // cycle the colors immediately to kick off the animation.
+            if (elapsedBeforePause === 0) {
+                colorCurrent = colorNext;
+                colorNext = getRandomPastel();
+                clockFaceTop.style.background = colorCurrent;
+                clockFaceBottom.style.backgroundColor = colorNext;
+            }
+
+            const startTime = Date.now() - elapsedBeforePause;
+
+            intervalId = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                
+                const percent = ((elapsed % 3000) / 3000) * 100;
+                clockFaceTop.style.background = `conic-gradient(from -90deg, transparent 0% ${percent}%, ${colorCurrent} ${percent}% 100%)`;
+                
+                const newCount = 1840 + Math.floor(elapsed / 3000);
+
+                if (newCount > count) {
+                    count = newCount;
+                    counter.textContent = count;
+                    
+                    colorCurrent = colorNext;
+                    colorNext = getRandomPastel();
+                    clockFaceTop.style.background = colorCurrent;
+                    clockFaceBottom.style.backgroundColor = colorNext;
+                }
+                
+                elapsedBeforePause = elapsed;
+            }, 16);
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+                playBtn.textContent = 'Play';
+            } else {
+                if (isFirstPlay) {
+                    isFirstPlay = false;
+                    startCountdown();
+                } else {
+                    startMainTimer();
+                }
+            }
+        });
+
+        initializeColors();
+    </script>
+</body>
+</html>
