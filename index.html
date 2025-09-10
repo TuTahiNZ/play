@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Counter</title>
+    <title>Place Race Timer</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -14,7 +14,7 @@
             align-items: center;
             height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: white; /* Static background color */
+            background-color: white;
             position: relative;
             overflow: hidden;
         }
@@ -35,7 +35,7 @@
             align-items: center;
         }
         .counter {
-            font-size: 3.5rem; /* Adjusted for the initial text */
+            font-size: 3.5rem;
             font-weight: bold;
             margin-bottom: 2rem;
             text-align: center;
@@ -57,6 +57,31 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .delay-input {
+            margin-top: 1rem;
+            padding: 0.25rem;
+            font-size: 1rem;
+            border: none;
+            border-bottom: 2px solid #3b82f6;
+            background-color: transparent;
+            text-align: center;
+            width: 80px;
+            outline: none;
+        }
+        /* Remove number input spinners */
+        .delay-input::-webkit-outer-spin-button,
+        .delay-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .delay-input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .input-label {
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -66,11 +91,15 @@
     <div class="content-wrapper">
         <div class="counter">Place Race</div>
         <button class="play-btn" id="playBtn">Play</button>
+        <input type="number" id="delayInput" class="delay-input" value="3" min="1">
+        <div class="input-label" id="delayLabel">Set Time</div>
     </div>
 
     <script>
         const counter = document.querySelector('.counter');
         const playBtn = document.getElementById('playBtn');
+        const delayInput = document.getElementById('delayInput');
+        const delayLabel = document.getElementById('delayLabel');
         const clockFaceTop = document.getElementById('clockFaceTop');
         const clockFaceBottom = document.getElementById('clockFaceBottom');
         
@@ -81,6 +110,7 @@
 
         let isFirstPlay = true;
         let elapsedBeforePause = 0;
+        let delayMs = 3000;
 
         function getRandomPastel() {
             const hue = Math.floor(Math.random() * 360);
@@ -100,25 +130,25 @@
             counter.style.fontSize = '5rem';
             counter.textContent = countdownValue;
 
-            const countdownInterval = setInterval(() => {
-                countdownValue--;
-                if (countdownValue > 0) {
+            const countdownStep = () => {
+                if (countdownValue > 1) {
+                    countdownValue--;
                     counter.textContent = countdownValue;
+                    setTimeout(countdownStep, 1000);
                 } else {
-                    clearInterval(countdownInterval);
-                    playBtn.disabled = false;
+                    // Final step
                     counter.textContent = count;
+                    playBtn.disabled = false;
                     startMainTimer();
                 }
-            }, 1000);
+            };
+
+            setTimeout(countdownStep, 1000);
         }
 
         function startMainTimer() {
             playBtn.textContent = 'Pause';
             
-            // This is the key change:
-            // If the timer is starting from zero (i.e., not resuming from a pause),
-            // cycle the colors immediately to kick off the animation.
             if (elapsedBeforePause === 0) {
                 colorCurrent = colorNext;
                 colorNext = getRandomPastel();
@@ -131,10 +161,10 @@
             intervalId = setInterval(() => {
                 const elapsed = Date.now() - startTime;
                 
-                const percent = ((elapsed % 3000) / 3000) * 100;
+                const percent = ((elapsed % delayMs) / delayMs) * 100;
                 clockFaceTop.style.background = `conic-gradient(from -90deg, transparent 0% ${percent}%, ${colorCurrent} ${percent}% 100%)`;
                 
-                const newCount = 1840 + Math.floor(elapsed / 3000);
+                const newCount = 1840 + Math.floor(elapsed / delayMs);
 
                 if (newCount > count) {
                     count = newCount;
@@ -150,18 +180,30 @@
             }, 16);
         }
 
-        playBtn.addEventListener('click', () => {
+        function togglePlayPause() {
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
                 playBtn.textContent = 'Play';
             } else {
                 if (isFirstPlay) {
+                    delayMs = Math.max(1, parseInt(delayInput.value, 10)) * 1000;
+                    delayInput.style.display = 'none';
+                    delayLabel.style.display = 'none';
                     isFirstPlay = false;
                     startCountdown();
                 } else {
                     startMainTimer();
                 }
+            }
+        }
+
+        playBtn.addEventListener('click', togglePlayPause);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlayPause();
             }
         });
 
