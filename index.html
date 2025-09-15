@@ -103,7 +103,7 @@
         const clockFaceTop = document.getElementById('clockFaceTop');
         const clockFaceBottom = document.getElementById('clockFaceBottom');
         
-        let count = 1840;
+        let count = 1830;
         let intervalId = null;
         let colorCurrent;
         let colorNext;
@@ -164,7 +164,7 @@
                 const percent = ((elapsed % delayMs) / delayMs) * 100;
                 clockFaceTop.style.background = `conic-gradient(from -90deg, transparent 0% ${percent}%, ${colorCurrent} ${percent}% 100%)`;
                 
-                const newCount = 1840 + Math.floor(elapsed / delayMs);
+                const newCount = 1830 + Math.floor(elapsed / delayMs);
 
                 if (newCount > count) {
                     count = newCount;
