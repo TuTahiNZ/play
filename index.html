@@ -1,213 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Place Race Timer</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-            background-color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        .clock-face {
-            position: absolute;
-            width: 300vh;
-            height: 300vh;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0; 
-        }
-        .content-wrapper {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .counter {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        .play-btn {
-            padding: 0.5rem 2rem;
-            font-size: 1.5rem;
-            border-radius: 0.5rem;
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        .play-btn:hover {
-            background-color: #2563eb;
-        }
-        .play-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .delay-input {
-            margin-top: 1rem;
-            padding: 0.25rem;
-            font-size: 1rem;
-            border: none;
-            border-bottom: 2px solid #3b82f6;
-            background-color: transparent;
-            text-align: center;
-            width: 80px;
-            outline: none;
-        }
-        /* Remove number input spinners */
-        .delay-input::-webkit-outer-spin-button,
-        .delay-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .delay-input[type=number] {
-            -moz-appearance: textfield;
-        }
-        .input-label {
-            font-size: 0.85rem;
-            color: #555;
-            margin-top: 0.25rem;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Place Race Timer</title>
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .clock-face {
+      position: absolute;
+      width: 300vh;
+      height: 300vh;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .content-wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .counter {
+      font-size: 3.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .play-btn {
+      padding: 0.5rem 2rem;
+      font-size: 1.5rem;
+      border-radius: 0.5rem;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s, opacity 0.3s;
+    }
+    .play-btn:hover {
+      background-color: #2563eb;
+    }
+    .play-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    select.play-btn {
+      appearance: none;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s, opacity 0.3s;
+      margin-top: 1rem;
+      width: 120px;
+      text-align: center;
+    }
+    select.play-btn:hover {
+      background-color: #2563eb;
+    }
+    select.play-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .delay-input {
+      margin-top: 1rem;
+      padding: 0.25rem;
+      font-size: 1rem;
+      border: none;
+      border-bottom: 2px solid #3b82f6;
+      background-color: transparent;
+      text-align: center;
+      width: 80px;
+      outline: none;
+    }
+    .input-label {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 0.25rem;
+    }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="clock-face" id="clockFaceBottom"></div>
-    <div class="clock-face" id="clockFaceTop"></div>
+  <div class="clock-face" id="clockFaceBottom"></div>
+  <div class="clock-face" id="clockFaceTop"></div>
 
-    <div class="content-wrapper">
-        <div class="counter">Place Race</div>
-        <button class="play-btn" id="playBtn">Play</button>
-        <input type="number" id="delayInput" class="delay-input" value="3" min="1">
-        <div class="input-label" id="delayLabel">Set Time</div>
+  <div class="content-wrapper">
+    <div class="counter">Place Race</div>
+
+    <div class="button-group">
+      <button class="play-btn" id="playBtn">Play</button>
+      <button class="play-btn" id="resetBtn" style="display:none;">Reset</button>
     </div>
 
-    <script>
-        const counter = document.querySelector('.counter');
-        const playBtn = document.getElementById('playBtn');
-        const delayInput = document.getElementById('delayInput');
-        const delayLabel = document.getElementById('delayLabel');
-        const clockFaceTop = document.getElementById('clockFaceTop');
-        const clockFaceBottom = document.getElementById('clockFaceBottom');
-        
-        let count = 1830;
-        let intervalId = null;
-        let colorCurrent;
-        let colorNext;
+    <select id="delaySelect" class="play-btn">
+      <option value="4">4</option>
+      <option value="3.5">3.5</option>
+      <option value="3" selected>3</option>
+      <option value="2.5">2.5</option>
+      <option value="2">2</option>
+      <option value="1.5">1.5</option>
+      <option value="1">1</option>
+      <option value="custom">Custom</option>
+    </select>
+    <input type="number" id="customInput" class="delay-input" style="display:none;" min="0.1" step="0.1" placeholder="Seconds">
+    <div class="input-label" id="delayLabel">Set Time</div>
+  </div>
 
-        let isFirstPlay = true;
-        let elapsedBeforePause = 0;
-        let delayMs = 3000;
+  <script>
+    const counter = document.querySelector('.counter');
+    const playBtn = document.getElementById('playBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const delaySelect = document.getElementById('delaySelect');
+    const customInput = document.getElementById('customInput');
+    const delayLabel = document.getElementById('delayLabel');
+    const clockFaceTop = document.getElementById('clockFaceTop');
+    const clockFaceBottom = document.getElementById('clockFaceBottom');
 
-        function getRandomPastel() {
-            const hue = Math.floor(Math.random() * 360);
-            return `hsl(${hue}, 100%, 85%)`;
+    let count = 1830;
+    let intervalId = null;
+    let colorCurrent;
+    let colorNext;
+    let lastHue = null;
+
+    let isFirstPlay = true;
+    let elapsedBeforePause = 0;
+    let delayMs = 3000;
+    let speedMultiplier = 1;
+
+    function getUniquePastel() {
+      let hue;
+      do {
+        hue = Math.floor(Math.random() * 360);
+      } while (Math.abs(hue - lastHue) < 30);
+      lastHue = hue;
+      return `hsl(${hue}, 100%, 85%)`;
+    }
+
+    function initializeColors() {
+      colorCurrent = getUniquePastel();
+      colorNext = getUniquePastel();
+      clockFaceTop.style.backgroundColor = colorCurrent;
+      clockFaceBottom.style.backgroundColor = colorNext;
+    }
+
+    function getDelayMs() {
+      return parseFloat(delaySelect.value === 'custom' ? customInput.value : delaySelect.value) * 1000;
+    }
+
+    delaySelect.addEventListener('change', () => {
+      customInput.style.display = delaySelect.value === 'custom' ? 'inline-block' : 'none';
+    });
+
+    function startCountdown() {
+      playBtn.disabled = true;
+      let countdownValue = 3;
+      counter.style.fontSize = '5rem';
+      counter.textContent = countdownValue;
+
+      const countdownStep = () => {
+        if (countdownValue > 1) {
+          countdownValue--;
+          counter.textContent = countdownValue;
+          setTimeout(countdownStep, 1000);
+        } else {
+          counter.textContent = count;
+          playBtn.disabled = false;
+          startMainTimer();
         }
-        
-        function initializeColors() {
-            colorCurrent = getRandomPastel();
-            colorNext = getRandomPastel();
-            clockFaceTop.style.backgroundColor = colorCurrent;
-            clockFaceBottom.style.backgroundColor = colorNext;
-        }
-        
-        function startCountdown() {
-            playBtn.disabled = true;
-            let countdownValue = 3;
-            counter.style.fontSize = '5rem';
-            counter.textContent = countdownValue;
+      };
 
-            const countdownStep = () => {
-                if (countdownValue > 1) {
-                    countdownValue--;
-                    counter.textContent = countdownValue;
-                    setTimeout(countdownStep, 1000);
-                } else {
-                    // Final step
-                    counter.textContent = count;
-                    playBtn.disabled = false;
-                    startMainTimer();
-                }
-            };
+      setTimeout(countdownStep, 1000);
+    }
 
-            setTimeout(countdownStep, 1000);
-        }
 
-        function startMainTimer() {
-            playBtn.textContent = 'Stop';
-            
-            if (elapsedBeforePause === 0) {
-                colorCurrent = colorNext;
-                colorNext = getRandomPastel();
-                clockFaceTop.style.background = colorCurrent;
-                clockFaceBottom.style.backgroundColor = colorNext;
-            }
 
-            const startTime = Date.now() - elapsedBeforePause;
+    function startMainTimer() {
+      playBtn.textContent = 'Stop';
 
-            intervalId = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                
-                const percent = ((elapsed % delayMs) / delayMs) * 100;
-                clockFaceTop.style.background = `conic-gradient(from -90deg, transparent 0% ${percent}%, ${colorCurrent} ${percent}% 100%)`;
-                
-                const newCount = 1830 + Math.floor(elapsed / delayMs);
+      if (elapsedBeforePause === 0) {
+        colorCurrent = colorNext;
+        colorNext = getUniquePastel();
+        clockFaceTop.style.background = colorCurrent;
+        clockFaceBottom.style.backgroundColor = colorNext;
+      }
 
-                if (newCount > count) {
-                    count = newCount;
-                    counter.textContent = count;
-                    
-                    colorCurrent = colorNext;
-                    colorNext = getRandomPastel();
-                    clockFaceTop.style.background = colorCurrent;
-                    clockFaceBottom.style.backgroundColor = colorNext;
-                }
-                
-                elapsedBeforePause = elapsed;
-            }, 16);
+      const startTime = Date.now() - elapsedBeforePause;
+
+      intervalId = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const adjustedDelay = delayMs * speedMultiplier;
+
+        const percent = ((elapsed % adjustedDelay) / adjustedDelay) * 100;
+        clockFaceTop.style.background = `conic-gradient(from -90deg, transparent 0% ${percent}%, ${colorCurrent} ${percent}% 100%)`;
+
+        const newCount = 1830 + Math.floor(elapsed / adjustedDelay);
+
+        if (newCount > count) {
+          count = newCount;
+          counter.textContent = count;
+
+          colorCurrent = colorNext;
+          colorNext = getUniquePastel();
+          clockFaceTop.style.background = colorCurrent;
+          clockFaceBottom.style.backgroundColor = colorNext;
         }
 
-        function togglePlayPause() {
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-                playBtn.textContent = 'Play';
-            } else {
-                if (isFirstPlay) {
-                    delayMs = Math.max(1, parseInt(delayInput.value, 10)) * 1000;
-                    delayInput.style.display = 'none';
-                    delayLabel.style.display = 'none';
-                    isFirstPlay = false;
-                    startCountdown();
-                } else {
-                    startMainTimer();
-                }
-            }
+        elapsedBeforePause = elapsed;
+      }, 16);
+    }
+
+    function togglePlayPause() {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+        playBtn.textContent = 'Play';
+        resetBtn.style.display = 'inline-block';
+      } else {
+        resetBtn.style.display = 'none';
+        if (isFirstPlay) {
+          delayMs = getDelayMs();
+          delaySelect.style.display = 'none';
+          customInput.style.display = 'none';
+          delayLabel.style.display = 'none';
+          isFirstPlay = false;
+          startCountdown();
+        } else {
+          startMainTimer();
         }
+      }
+    }
 
-        playBtn.addEventListener('click', togglePlayPause);
+    playBtn.addEventListener('click', togglePlayPause);
+    resetBtn.addEventListener('click', () => location.reload());
 
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                togglePlayPause();
-            }
-        });
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        speedMultiplier = 0.5;
+      }
+    });
 
-        initializeColors();
-    </script>
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') {
+        speedMultiplier = 1;
+      }
+    });
+
+    document.body.addEventListener('mousedown', () => speedMultiplier = 0.5);
+    document.body.addEventListener('mouseup', () => speedMultiplier = 1);
+
+    initializeColors();
+  </script>
 </body>
 </html>
