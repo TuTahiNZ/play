@@ -108,7 +108,11 @@
 
   <div class="content-wrapper">
     <div class="counter">Place Race</div>
-<div><a href="Place Race official instructions.pdf" target="_blank" style="font-size:1rem; text-decoration:underline; color:#2563eb;">View full instructions</a></div>
+  <div id="instructionsLink">
+    <a href="Place Race official Instructions.pdf" target="_blank" style="font-size:1rem; text-decoration:underline; color:#2563eb;">
+      View full instructions
+    </a>
+  </div>
     <div class="button-group">
       <button class="play-btn" id="playBtn">Play</button>
       <button class="play-btn" id="resetBtn" style="display:none;">Reset</button>
@@ -130,6 +134,7 @@
 
   <script>
     const counter = document.querySelector('.counter');
+    const instructionsLink = document.getElementById('instructionsLink');
     const playBtn = document.getElementById('playBtn');
     const resetBtn = document.getElementById('resetBtn');
     const delaySelect = document.getElementById('delaySelect');
@@ -237,7 +242,9 @@
         intervalId = null;
         playBtn.textContent = 'Play';
         resetBtn.style.display = 'inline-block';
+        instructionsLink.style.display = 'block';
       } else {
+        instructionsLink.style.display = 'none';
         resetBtn.style.display = 'none';
         if (isFirstPlay) {
           delayMs = getDelayMs();
